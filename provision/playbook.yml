@@ -1,0 +1,207 @@
+---
+- name: main setup playbook
+  hosts: localhost warn=no
+  vars_files:
+    - ansibleConfig.yml
+
+  tasks:
+
+  - name: set time zone
+    shell: sudo timedatectl set-timezone America/Detroit
+
+  # enable IUS repository, the only way to get non-ancient version of PHP
+  - name: download IUS setup script
+    get_url:
+      url: https://setup.ius.io/
+      dest: ~/setup-ius.sh
+
+  - name: run IUS setup script
+    script: ~/setup-ius.sh
+
+  # install programs
+
+  - name: install nano
+    yum: name=nano state=latest
+
+  - name: install gcc
+    yum: name=gcc state=latest
+
+  - name: install apache
+    yum: name=httpd state=latest
+
+  - name: install mariadb (mysql fork)
+    yum: name=mariadb-server state=latest
+
+  - name: install php and packages
+    yum: name={{ item }} state=latest
+    with_items:
+      - mod_php70u
+      - php70u-cli
+      - php70u-curl
+      - php70u-intl
+      - php70u-mbstring
+      - php70u-mysqli
+      - php70u-pecl-imagick
+      - php70u-json
+      - php70u-devel
+
+  - name: install vim enhanced
+    yum: name=vim-enhanced state=latest
+
+  - name: install the python mysqldb modules
+    yum: name=MySQL-python state=latest
+
+  - name: install net-snmp
+    yum: name=net-snmp state=latest
+
+  - name: install net-snmp-libs
+    yum: name=net-snmp-libs state=latest
+
+  - name: install openssl
+    yum: name=openssl state=latest
+
+  - name: install openssl-devel
+    yum: name=openssl-devel state=latest
+
+  - name: install sslscan
+    yum: name=sslscan state=latest
+
+  - name: install expat-devel
+    yum: name=expat-devel state=latest
+
+  - name: install git
+    yum: name=git state=latest
+
+  - name: install mod_ssl
+    yum: name=mod_ssl state=latest
+
+  - name: install mod_security
+    yum: name=mod_security state=latest
+
+  - name: install mod_evasive
+    yum: name=mod_evasive state=latest
+
+  - name: install fail2ban
+    yum: name=fail2ban state=latest
+
+  - name: install ntp
+    yum: name=ntp state=latest
+
+  - name: install Convert::PEM (for Net::SFTP)
+    yum: name=perl-Convert-PEM state=latest
+
+  # configure firewall
+
+  - name: start firewall
+    service: name=firewalld state=started
+
+  - name: open firewall http
+    firewalld: service=http permanent=true state=enabled
+
+  - name: open firewall https
+    firewalld: service=https permanent=true state=enabled
+
+  - name: open firewall ssh
+    firewalld: service=ssh permanent=true state=enabled
+
+  - name: open firewall snmp
+    firewalld: port=161-162/udp permanent=true state=enabled
+
+  - name: open firewall SFTP tcp
+    firewalld: port=989-990/tcp permanent=true state=enabled
+
+  - name: open firewall SFTP udp
+    firewalld: port=989-990/udp permanent=true state=enabled
+
+  - name: open firewall MySQL
+    firewalld: port=3306/tcp permanent=true state=enabled
+
+  - name: configure firewall drop null packets
+    command: iptables -A INPUT -p tcp --tcp-flags ALL NONE -j DROP
+
+  - name: configure firewall reject SYN floods
+    command: iptables -A INPUT -p tcp ! --syn -m state --state NEW -j DROP
+
+  - name: configure firewall drop XMAS packets
+    command: iptables -A INPUT -p tcp --tcp-flags ALL ALL -j DROP
+
+  - name: restart firewall
+    service: name=firewalld state=restarted
+
+  # post install configurations
+
+  - name: copy in configs
+    copy: src=/var/www/site1/provision/filesToCopy/etc/ dest=/etc/
+
+  - name: copy in binaries
+    copy: src=/var/www/site1/provision/filesToCopy/usr/ dest=/usr/ mode="a+x"
+
+  - composer:
+      command: install
+      working_dir: /var/www/site1/webroot
+
+  - name: start mariadb
+    command: systemctl start mariadb.service
+
+  - name: create ssl directory
+    file: path=/etc/httpd/ssl/ state=directory
+
+  - name: create webroot directory
+    file: path=/var/www/site1/webroot/ state=directory mode=777
+
+  - name: create ssl cert
+    command: openssl req -x509 -nodes -subj "/C=US/ST=MI/L=Houghton/O=MyCompany/CN={{ssl_cn}}" -days 365 -newkey rsa:2048 -keyout /etc/httpd/ssl/apache.key -out /etc/httpd/ssl/apache.crt
+
+  - name: start apache
+    command: systemctl start httpd.service
+
+  - name: set mariadb service to start at boot
+    command: systemctl enable mariadb.service
+
+  - name: set apache service to start at boot
+    command: systemctl enable httpd.service
+
+  - name: restart apache
+    service: name=httpd state=restarted
+
+  - name: create database
+    mysql_db: name=site1 state=present encoding=utf8mb4 collation=utf8mb4_unicode_ci
+
+  - name: remove default test database
+    mysql_db: name=test state=absent
+
+  - name: remove default apache paths
+    file: path=/var/www/html state=absent
+
+  - name: remove default apache paths
+    file: path=/var/www/cgi-bin state=absent
+
+  - name: remove anonymous mysql users
+    mysql_user: name='' host={{ item }} state=absent
+    with_items:
+    - '{{ ansible_hostname }}'
+    - 'localhost'
+    - 'localhost.localdomain'
+    - '127.0.0.1'
+    - '::1'
+    - '%'
+    ignore_errors: true
+
+  - name: create mysql web user
+    mysql_user: name=web host=localhost password=lgbjeo54v4bie0hn0g53gh49hg4gojsbgd priv=site1.*:ALL state=present
+
+  - name: set mysql root password for current host
+    mysql_user: name=root host={{item}} password="#P#a#s#s#w#o#r#d#" priv=*.*:ALL,GRANT state=present update_password=always
+    with_items:
+    - '{{ ansible_hostname }}'
+    ignore_errors: true
+
+  - name: set mysql root password for all hosts
+    mysql_user: name=root host={{item}} password="#P#a#s#s#w#o#r#d#" priv=*.*:ALL,GRANT state=present update_password=always login_user=root login_password="#P#a#s#s#w#o#r#d#" check_implicit_admin=yes
+    with_items:
+    - '127.0.0.1'
+    - '::1'
+    - '%'
+    - 'localhost'
+    - 'localhost.localdomain'
+    ignore_errors: true
