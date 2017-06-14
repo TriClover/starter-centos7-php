@@ -29,8 +29,11 @@
   - name: install apache
     yum: name=httpd state=latest
 
+  - name: remove outdated mariadb-libs before installing IUS mariadb
+    yum: name=mariadb-libs state=absent
+
   - name: install mariadb (mysql fork)
-    yum: name=mariadb-server state=latest
+    yum: name=mariadb101u-server state=latest
 
   - name: install php and packages
     yum: name={{ item }} state=latest
