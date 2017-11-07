@@ -13,6 +13,7 @@ provision/playbook.retry
 # Composer installed libraries
 /webroot/vendor
 /webroot/static/components
+/webroot/composer.lock
 
 # The following sections match platform and language specific junk files that Github recommends to ignore
 

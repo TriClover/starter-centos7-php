@@ -3,6 +3,16 @@
   hosts: localhost warn=no
   vars_files:
     - ansibleConfig.yml
+  become: yes
+  become_user: root
+  become_method: sudo
+
+  # enable mysql repo, the only way to get non-ancient version of mysql-utilities
+  pre_tasks:
+    - name: Install the MySQL repo.
+      yum:
+        name: http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm
+        state: present
 
   tasks:
 
@@ -93,6 +103,9 @@
   - name: install Convert::PEM (for Net::SFTP)
     yum: name=perl-Convert-PEM state=latest
 
+  - name: install mysql-utilities
+    yum: name=mysql-utilities state=latest
+
   # configure firewall
 
   - name: start firewall
@@ -170,6 +183,9 @@
   - name: create database
     mysql_db: name=site1 state=present encoding=utf8mb4 collation=utf8mb4_unicode_ci
 
+  - name: create comparison database
+    mysql_db: name=ki_compare state=present encoding=utf8mb4 collation=utf8mb4_unicode_ci
+
   - name: remove default test database
     mysql_db: name=test state=absent
 
@@ -191,7 +207,7 @@
     ignore_errors: true
 
   - name: create mysql web user
-    mysql_user: name=web host=localhost password=lgbjeo54v4bie0hn0g53gh49hg4gojsbgd priv=site1.*:ALL state=present
+    mysql_user: name=web host=localhost password=lgbjeo54v4bie0hn0g53gh49hg4gojsbgd priv=site1.*:ALL/ki_compare.*:ALL/mysql.*:SELECT state=present
 
   - name: set mysql root password for current host
     mysql_user: name=root host={{item}} password="#P#a#s#s#w#o#r#d#" priv=*.*:ALL,GRANT state=present update_password=always
