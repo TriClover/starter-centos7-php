@@ -1,5 +1,6 @@
 # Configuration files
 *.ini
+*.json
 
 # Uploaded or generated data files; logs
 
@@ -12,6 +13,7 @@ provision/playbook.retry
 
 # Composer installed libraries
 /webroot/vendor
+/vendor
 /webroot/static/components
 /webroot/composer.lock
 

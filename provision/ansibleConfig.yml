@@ -1,2 +1,3 @@
 production: false
-ssl_cn: localhost
+domain: site1.example.com
+ssl_dn: '/C=US/ST=Michigan/L=Houghton/O=MyCompany/CN={{domain}}'

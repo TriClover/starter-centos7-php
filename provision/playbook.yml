@@ -7,6 +7,10 @@
   become_user: root
   become_method: sudo
 
+  vars:
+    #prod: https://acme-v01.api.letsencrypt.org | dev: http://localhost:4001 | stage: https://acme-staging.api.letsencrypt.org
+    letsencrypt_url: "{{ 'https://acme-v01.api.letsencrypt.org' if production == 'true' else 'http://localhost:4001' }}"
+  
   # enable mysql repo, the only way to get non-ancient version of mysql-utilities
   pre_tasks:
     - name: Install the MySQL repo.
@@ -15,9 +19,9 @@
         state: present
 
   tasks:
-
-  - name: set time zone
-    shell: sudo timedatectl set-timezone America/Detroit
+  - name: set timezone
+    timezone:
+      name: America/Detroit
 
   # enable IUS repository, the only way to get non-ancient version of PHP
   - name: download IUS setup script
@@ -29,7 +33,6 @@
     script: ~/setup-ius.sh
 
   # install programs
-
   - name: install nano
     yum: name=nano state=latest
 
@@ -165,8 +168,11 @@
   - name: create webroot directory
     file: path=/var/www/site1/webroot/ state=directory mode=777
 
-  - name: create ssl cert
-    command: openssl req -x509 -nodes -subj "/C=US/ST=MI/L=Houghton/O=MyCompany/CN={{ssl_cn}}" -days 365 -newkey rsa:2048 -keyout /etc/httpd/ssl/apache.key -out /etc/httpd/ssl/apache.crt
+  - name: create self-signed ssl cert
+    command: openssl req -x509 -nodes -subj "{{ssl_dn}}" -days 3650 -newkey rsa:2048 -keyout /etc/httpd/ssl/apache.key -out /etc/httpd/ssl/apache.crt
+
+  - name: create CSR for use in LetsEncrypt
+    command: openssl req -new -subj "{{ssl_dn}}" -key /etc/httpd/ssl/apache.key -out /etc/httpd/ssl/apache.csr
 
   - name: start apache
     command: systemctl start httpd.service
@@ -224,3 +230,61 @@
     - 'localhost'
     - 'localhost.localdomain'
     ignore_errors: true
+
+  #create ACME generated cert via Let's Encrypt (prod) or a local simulation of it (not prod)
+  #Uncomment when ansible letsencrypt module stops being broken
+  #It currently dumps a stack trace when doing the first letsencrypt task
+  #The documentation says "This module is flagged as preview"
+#  - name: install Docker (for Boulder)
+#    yum: name={{item}} state=latest
+#    when: not production
+#    with_items:
+#    - 'docker'
+#    - 'docker-compose'
+#    - 'docker-python'
+#
+#  - name: Start Docker (for Boulder)
+#    service:
+#      name: docker
+#      state: started
+#    when: not production
+#
+#  - name: install Boulder
+#    git:
+#      repo: https://github.com/letsencrypt/boulder.git
+#      dest: "~/boulder"
+#    when: not production
+#
+#  - name: start Boulder
+#    docker_service:
+#      project_src: ~/boulder
+#      state: present
+#    register: output
+#    when: not production
+#
+#  - name: Create LetsEncrypt request and challenge
+#    letsencrypt:
+#      account_key: /etc/httpd/ssl/apache.key
+#      csr: /etc/httpd/ssl/apache.csr
+#      dest: /etc/httpd/ssl/apache_acmetemp.crt
+#      acme_directory: '{{letsencrypt_url}}'
+#    register: domain_challenge
+#
+#  - name: Deposit challenge data for answering LetsEncrypt challenge
+#    copy:
+#      dest: /var/www/site1/webroot/{{ domain_challenge['challenge_data'][domain]['http-01']['resource'] }}
+#      content: "{{ domain_challenge['challenge_data'][domain]['http-01']['resource_value'] }}"
+#    when: domain_challenge['changed']
+#
+#  - name: Answer LetsEncrypt challenge and get cert signed by CA
+#    letsencrypt:
+#      account_key: /etc/httpd/ssl/apache.key
+#      csr: /etc/httpd/ssl/apache.csr
+#      dest: /etc/httpd/ssl/apache_acmetemp.crt
+#      acme_directory: '{{letsencrypt_url}}'
+#      data: "{{ domain_challenge }}"
+#    when: domain_challenge['changed']
+#
+#  - name: Replace the local self signed cert with the ACME generated one
+#    copy: src=/etc/httpd/ssl/apache_acmetemp.crt dest=/etc/httpd/ssl/apache.crt
+#
