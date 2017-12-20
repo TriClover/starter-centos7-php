@@ -1,6 +1,6 @@
 # Configuration files
 *.ini
-*.json
+/config/*.json
 
 # Uploaded or generated data files; logs
 
@@ -12,10 +12,11 @@
 provision/playbook.retry
 
 # Composer installed libraries
-/webroot/vendor
 /vendor
 /webroot/static/components
-/webroot/composer.lock
+composer.lock
+/static
+!/static/favicon.ico
 
 # The following sections match platform and language specific junk files that Github recommends to ignore
 

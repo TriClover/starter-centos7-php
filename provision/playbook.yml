@@ -51,15 +51,17 @@
   - name: install php and packages
     yum: name={{ item }} state=latest
     with_items:
-      - mod_php70u
-      - php70u-cli
-      - php70u-curl
-      - php70u-intl
-      - php70u-mbstring
-      - php70u-mysqli
-      - php70u-pecl-imagick
-      - php70u-json
-      - php70u-devel
+      - mod_php71u
+      - php71u-cli
+      - php71u-curl
+      - php71u-intl
+      - php71u-mbstring
+      - php71u-mysqli
+      - php71u-mysqlnd
+      - php71u-pecl-imagick
+      - php71u-pecl-yaml
+      - php71u-json
+      - php71u-devel
 
   - name: install vim enhanced
     yum: name=vim-enhanced state=latest
@@ -120,6 +122,9 @@
   - name: open firewall https
     firewalld: service=https permanent=true state=enabled
 
+  - name: open firewall 8802 (alt https)
+    firewalld: port=8802/tcp permanent=true state=enabled
+
   - name: open firewall ssh
     firewalld: service=ssh permanent=true state=enabled
 
@@ -155,9 +160,26 @@
   - name: copy in binaries
     copy: src=/var/www/site1/provision/filesToCopy/usr/ dest=/usr/ mode="a+x"
 
+  - name: Set domain name in apache config
+    lineinfile:
+      path: /etc/httpd/conf/httpd.conf
+      regexp: 'Define mainDomain site1.com'
+      line: "Define mainDomain {{domain}}"
+
+  - name: workaround for file permissions bug in modsecurity
+    file:
+      path: "{{item}}"
+      state: touch
+      owner: root
+      group: apache
+      mode: u=rw,g=rw,o-rwx
+    with_items:
+      - /var/log/httpd/modsec_debug.log
+      - /var/log/httpd/modsec_audit.log
+
   - composer:
       command: install
-      working_dir: /var/www/site1/webroot
+      working_dir: /var/www/site1
 
   - name: start mariadb
     command: systemctl start mariadb.service

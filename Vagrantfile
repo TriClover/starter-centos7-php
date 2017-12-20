@@ -13,6 +13,7 @@ Vagrant.configure(2) do |config|
   # Web vhosts
   config.vm.network "forwarded_port", guest: 443, host: 8800
   config.vm.network "forwarded_port", guest: 80, host: 8801
+  config.vm.network "forwarded_port", guest: 8802, host: 8802
   
   # MySQL
   config.vm.network "forwarded_port", guest: 3306, host: 3306
@@ -25,9 +26,8 @@ Vagrant.configure(2) do |config|
   
   # Share folders into the VM. By default the project root becomes /vagrant
   # This line also shares the actual website folder to where apache will look for the web root.
-  config.vm.synced_folder "webroot", "/var/www/site1/webroot"
-  config.vm.synced_folder "provision", "/var/www/site1/provision"
-  config.vm.synced_folder "config", "/var/www/site1/config"
+  config.vm.synced_folder ".", "/vagrant"
+  config.vm.synced_folder ".", "/var/www/site1"
 
   # Install Ansible
   config.vm.provision "shell", inline: "yum -y install epel-release"

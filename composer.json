@@ -3,7 +3,7 @@
 		"component-dir": "static/components",
 		"secure-http": false
 	},
-	"minimum-stability": "rc",
+	"minimum-stability": "dev",
 	"repositories": [ { "type": "composer", "url": "http://mls-centos01/satis/" } ],
     "require": {
 		"mls/ki": "dev-master"
