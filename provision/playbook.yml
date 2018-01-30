@@ -48,12 +48,15 @@
   - name: install mariadb (mysql fork)
     yum: name=mariadb101u-server state=latest
 
+  # "common" here provides zip
   - name: install php and packages
     yum: name={{ item }} state=latest
     with_items:
       - mod_php71u
       - php71u-cli
+      - php71u-common
       - php71u-curl
+      - php71u-gd
       - php71u-intl
       - php71u-mbstring
       - php71u-mysqli
@@ -62,6 +65,7 @@
       - php71u-pecl-yaml
       - php71u-json
       - php71u-devel
+      - php71u-xml
 
   - name: install vim enhanced
     yum: name=vim-enhanced state=latest
