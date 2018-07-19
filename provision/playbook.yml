@@ -73,6 +73,10 @@
   - name: install the python mysqldb modules
     yum: name=MySQL-python state=latest
 
+    # to avoid "ImportError: No module" bug in latest
+  - name: install the python mysqldb connector lower version
+    yum: name=mysql-connector-python-2.1.7-1.el7.x86_64 state=present allow_downgrade=yes
+
   - name: install net-snmp
     yum: name=net-snmp state=latest
 
