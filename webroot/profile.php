@@ -46,8 +46,12 @@ function body()
 	$out = '';
 	if(Authenticator::$user !== NULL)
 	{
+		$out .= '<fieldset><legend>Edit Personal Information</legend>';
 		$out .= $dtPassword->getHTML() . '<br/><br/>';
 		$out .= $dtEmail->getHTML();
+		$out .= '</fieldset><fieldset><legend>Security Settings</legend>';
+		$out .= '<ul><li><a href="sessions.php">List active sessions</a></li></ul>';
+		$out .= '</fieldset>';
 	}else{
 		$out .= 'Hi, please login';
 	}
