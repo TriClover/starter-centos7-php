@@ -1,5 +1,5 @@
 <?php
-require_once('../vendor/autoload.php');
+require_once('../../vendor/autoload.php');
 use \mls\ki\Ki;
 use \mls\ki\MarkupGenerator;
 use \mls\ki\Security\Authenticator;

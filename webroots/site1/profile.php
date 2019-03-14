@@ -1,6 +1,6 @@
 <?php
 //External resources
-require_once('../vendor/autoload.php');
+require_once('../../vendor/autoload.php');
 use \mls\ki\Ki;
 use \mls\ki\MarkupGenerator;
 use \mls\ki\Security\Authenticator;
@@ -9,13 +9,14 @@ use \mls\ki\Widgets\DataTableField;
 use \mls\ki\Widgets\LoginForm;
 use \mls\ki\Database;
 //App level resources
-require_once('PageElements.php');
+require_once('../../src/PageElements.php');
 
 //Processing
 Ki::init('site1');
 Authenticator::checkLogin();
 $db = Database::db();
-$dtSessions = NULL;
+$dtPassword = NULL;
+$dtEmail = NULL;
 processPage();
 
 //Output
@@ -27,22 +28,30 @@ echo MarkupGenerator::pageFooter();
 //Page level resources
 function processPage()
 {
-	global $dtSessions;
+	global $dtPassword;
+	global $dtEmail;
 	if(Authenticator::$user !== NULL)
 	{
-		$dtSessions = LoginForm::getSessionEditor();
-		$dtSessions->handleParams();
+		$dtPassword = LoginForm::getPasswordEditor();
+		$dtPassword->handleParams();
+		$dtEmail = LoginForm::getEmailEditor();
+		$dtEmail->handleParams();
 	}
 }
 
 function body()
 {
-	global $dtSessions;
+	global $dtPassword;
+	global $dtEmail;
 	$out = '';
 	if(Authenticator::$user !== NULL)
 	{
-		$out .= 'This is a list of all currently logged in sessions for your account. Deleting one is the same as clicking Logout from that location.<br/><br/>';
-		$out .= $dtSessions->getHTML();
+		$out .= '<fieldset><legend>Edit Personal Information</legend>';
+		$out .= $dtPassword->getHTML() . '<br/><br/>';
+		$out .= $dtEmail->getHTML();
+		$out .= '</fieldset><fieldset><legend>Security Settings</legend>';
+		$out .= '<ul><li><a href="sessions.php">List active sessions</a></li></ul>';
+		$out .= '</fieldset>';
 	}else{
 		$out .= 'Hi, please login';
 	}

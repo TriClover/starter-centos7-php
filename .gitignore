@@ -1,9 +1,5 @@
 # Configuration files
-*.ini
 /config/*.json
-
-# Uploaded or generated data files; logs
-
 
 # Vagrant temp data
 .vagrant
@@ -13,10 +9,8 @@ provision/playbook.retry
 
 # Composer installed libraries
 /vendor
-/webroot/static/components
+/webroots/static/components
 composer.lock
-/static
-!/static/favicon.ico
 
 # The following sections match platform and language specific junk files that Github recommends to ignore
 

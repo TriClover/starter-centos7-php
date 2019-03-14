@@ -23,7 +23,10 @@ Vagrant.configure(2) do |config|
 
   # Show this after successful `vagrant up`
   config.vm.post_up_message = "See the Vagrantfile portforward section for accessible services and their passwords. If the localhost port forwarding isn't working, just use the IP address Vagrant listed as 'SSH address' near the beginning of this output to access the guest ports directly. *** For the site to actually work you will need to either import data into the internal mysql server, or point the site at an external mysql server. Other than that everything is ready to go, unless you also see some errors."
-  
+
+  # Create the website directory
+  config.vm.provision "shell", inline: "sudo mkdir -p /var/www/site1/"
+
   # Share folders into the VM. By default the project root becomes /vagrant
   # This line also shares the actual website folder to where apache will look for the web root.
   config.vm.synced_folder ".", "/vagrant"
