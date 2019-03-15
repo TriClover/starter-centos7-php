@@ -3,8 +3,18 @@
 		"secure-http": false
 	},
 	"minimum-stability": "dev",
-	"repositories": [ { "type": "composer", "url": "http://mls-centos01/satis/" } ],
+	"repositories": [
+		{
+			"type": "composer",
+			"url": "http://mls-centos01/satis/"
+		},
+		{
+			"type": "composer",
+			"url": "https://asset-packagist.org"
+		}
+	],
     "require": {
 		"mls/ki": "dev-master"
     }
+
 }
