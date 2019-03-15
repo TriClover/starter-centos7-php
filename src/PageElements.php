@@ -31,7 +31,7 @@ class PageElements
 		$out = <<<HTMLCONTENT
   <div id="header" class="clearfix">
    <a id="logo" href="/">
-    <img src="$base/servo/gears.jpg"/>
+    <img src="$base/site1/gears.jpg"/>
    </a>
    $lfMarkup
    <span id="icons">
@@ -48,10 +48,10 @@ HTMLCONTENT;
 		$base = $config['general']['staticUrl'];
 		$comp = $config['general']['staticDir'];
 		
-		$mt_main_css       = filemtime($comp . '/servo/main.css');
+		$mt_main_css       = filemtime($comp . '/site1/main.css');
 		
 		$out = <<<HTMLCONTENT
-  <link rel="stylesheet" href="$base/servo/main.css?ver=$mt_main_css"/>
+  <link rel="stylesheet" href="$base/site1/main.css?ver=$mt_main_css"/>
 HTMLCONTENT;
 		return $out;
 	}

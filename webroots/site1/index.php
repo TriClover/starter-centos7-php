@@ -7,7 +7,8 @@ use \mls\ki\Setup\Setup;
 use \mls\ki\Widgets\LoginForm;
 
 //Setup page
-$ansibleConfig = yaml_parse(file_get_contents('../provision/ansibleConfig.yml'));
+
+$ansibleConfig = yaml_parse(file_get_contents('../../provision/ansibleConfig.yml'));
 $production = $ansibleConfig['production'];
 $kiSetupConfig = [];
 $kiSetupConfig['general'] = [];
@@ -20,22 +21,15 @@ echo MarkupGenerator::pageHeader();
 echo $setup->getHTML();
 echo MarkupGenerator::pageFooter();
 
-/*
+
 //Starter main page
+/*require_once('../../src/PageElements.php');
 Ki::init('site1');
 Authenticator::checkLogin();
-echo MarkupGenerator::pageHeader();
-echo topBar();
+echo MarkupGenerator::pageHeader(PageElements::headContent());
+echo PageElements::topBar();
 echo authMessage();
 echo MarkupGenerator::pageFooter();
-
-function topBar()
-{
-	$loginForm = new LoginForm();
-	$loginForm->handleParams();
-	$lfMarkup = $loginForm->getHTML();
-	return '<div style="background-color:#CCC;height:44px;" id="header">Site1' . $lfMarkup . '</div>';
-}
 
 function authMessage()
 {

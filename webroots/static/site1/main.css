@@ -1,0 +1,37 @@
+@charset "UTF-8";
+
+/* Topbar */
+
+#header{
+	background-color:#CCC;
+	height:44px;
+}
+
+#header #logo{
+	float:left;
+}
+
+#header #logo img{
+	display:block;
+}
+
+#header #icons{
+	line-height:40px;
+	font-size:20px;
+	float:left;
+	margin-left:2em;
+}
+
+#header #icons a{
+	text-decoration:none;
+	color:black;
+	padding:10px;
+}
+
+#header #icons a:hover{
+	background-color:#DDD;
+}
+
+#header .selectedNav{
+	border-bottom: 2px #00F solid;
+}

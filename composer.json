@@ -1,6 +1,5 @@
 {
 	"config": {
-		"component-dir": "webroots/static/components",
 		"secure-http": false
 	},
 	"minimum-stability": "dev",
